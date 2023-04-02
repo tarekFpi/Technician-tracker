@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rcredit_apps/core/network/authorization_interceptor.dart';
-import 'package:rcredit_apps/core/network/dio_exception.dart';
-import 'package:rcredit_apps/core/utils/constant.dart';
+import 'package:technician_tracker/core/network/authorization_interceptor.dart';
+import 'package:technician_tracker/core/network/dio_exception.dart';
+import 'package:technician_tracker/core/utils/constant.dart';
 
 
 const _defaultConnectTimeout = Duration.millisecondsPerMinute;
@@ -104,6 +104,35 @@ class DioClient {
       throw e.toString();
     }
   }
+
+  Future<Response<dynamic>> put(
+      String uri, {
+        data,
+        Map<String, dynamic>? queryParameters,
+        Options? options,
+        CancelToken? cancelToken,
+        ProgressCallback? onSendProgress,
+        ProgressCallback? onReceiveProgress,
+      }) async {
+    try {
+      var response = await _dio.put(
+        uri,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      );
+      return response;
+    } on DioError catch (err) {
+      final errorMessage = DioException.fromDioError(err).toString();
+      throw errorMessage;
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
 
   Future<dynamic> delete(
       String uri, {
