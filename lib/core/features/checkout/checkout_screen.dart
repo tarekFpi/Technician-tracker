@@ -6,15 +6,17 @@
  import 'package:get/get.dart';
  import 'package:get/get_navigation/src/extension_navigation.dart';
  import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:technician_tracker/core/features/checkout/check_out_controller.dart';
+ import 'package:technician_tracker/core/features/checkout/check_out_controller.dart';
+import 'package:technician_tracker/core/features/nav/nav_screen.dart';
  import 'package:technician_tracker/core/features/service/location_service.dart';
  import 'package:technician_tracker/core/theme/color_scheme.dart';
  import 'package:technician_tracker/core/utils/hexcolor.dart';
-import 'package:technician_tracker/core/utils/toast.dart';
-import 'package:technician_tracker/core/widgets/checkout_animated_button.dart';
+ import 'package:technician_tracker/core/utils/toast.dart';
+ import 'package:technician_tracker/core/widgets/checkout_animated_button.dart';
  import 'package:intl/intl.dart';
+ import 'package:geocoding/geocoding.dart' as geo;
+ import 'package:location/location.dart';
  import 'package:flutter_easyloading/flutter_easyloading.dart';
-
 
 class CheckOutScreen extends StatefulWidget {
   const CheckOutScreen({Key? key}) : super(key: key);
@@ -33,51 +35,40 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
     getUserCurrentLocation();
   }
 
-  List<Marker> markers = [];
+  List<Marker> _markers = [];
   List<Polyline> polylines = [];
   List<LatLng> latlngList = [];
+
+  String Address = '';
+
+  bool isMyLocation = false;
+
+  String currentTime='';
 
   final checkOutController = Get.put(CheckOutController());
 
   Completer<GoogleMapController> controller = Completer();
-  CameraPosition  cameraPosition=CameraPosition(target: LatLng(0, 0),zoom: 10.0);
 
-  late Position position;
+  CameraPosition  cameraPosition = CameraPosition(target: LatLng(0, 0),zoom: 10.0);
 
-  Future<Position> getUserCurrentLocation() async {
+  Location currentLocation = Location();
+  late LocationData _locationData;
+  late bool _serviceEnabled;
+  late PermissionStatus _permissionGranted;
+
+
+  void getUserCurrentLocation() async {
+
     try {
-      final status = await LocationService.getLocationState();
-      if (status == LocationStatus.PERMISSION_OK) {
-        //permission is ok
 
-        position = await Geolocator.getCurrentPosition();
-        final latLng = LatLng(position.latitude, position.longitude);
+      GoogleMapController _controller = await controller.future;
 
-        cameraPosition =CameraPosition(target: latLng,zoom: 14,);
+      _serviceEnabled = await currentLocation.serviceEnabled();
 
-        markers.add(
-          Marker( markerId: MarkerId('current_Postion'),
-              infoWindow: InfoWindow(title: 'Current Position'),
-              position: latLng,
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueGreen,
-              )),
+      if (!_serviceEnabled) {
 
-        );
-
-        GoogleMapController googleMapController =await controller.future;
-
-        googleMapController.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-
-        setState(() {
-
-        });
-
-        EasyLoading.dismiss();
-      }
-
-      if (status == LocationStatus.SERVICE_DISABLE) {
         showDialog<void>(
+          barrierDismissible: false,
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("Location services are disabled."),
@@ -85,74 +76,94 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                 "Please enable the location service from app settings"),
             actions: <Widget>[
               TextButton(
-                child: const Text('Close'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              TextButton(
-                child: const Text('Go to settings'),
+                child:  Text('Close'),
                 onPressed: () {
-                  Geolocator.openLocationSettings();
-                  Navigator.of(context).pop();
+
+                  Get.offAll(NavScreen());
+
                 },
               ),
-            ],
-          ),
-        );
-      }
-      if (status == LocationStatus.PERMISSION_DENIED) {
-        showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Location permissions are denied"),
-            content: const Text(
-                "Location permissions are require to use this app. Please accept location permissions"),
-            actions: <Widget>[
               TextButton(
-                child: const Text('Close'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              TextButton(
-                child: const Text('Ok'),
-                onPressed: () {
-                  getUserCurrentLocation();
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      }
-      if (status == LocationStatus.PERMISSION_DENIED) {
-        if (status == LocationStatus.PERMISSION_DENIED) {
-          showDialog<void>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text(
-                  "Location permissions are permanently denied, we cannot request permissions"),
-              content: const Text(
-                  "Please accept location permission from app setting"),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Close'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                TextButton(
-                  child: const Text('Open Settings'),
-                  onPressed: () {
-                    Geolocator.openLocationSettings();
+                child:  Text('Ok'),
+                onPressed: ()   async {
+
+                  _serviceEnabled = await currentLocation.requestService();
+
+                  if (_serviceEnabled==true) {
+
                     Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
-          );
+                    EasyLoading.show(dismissOnTap: false, maskType: EasyLoadingMaskType.custom);
+
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+
+      }else{
+        EasyLoading.show(dismissOnTap: false, maskType: EasyLoadingMaskType.custom);
+      }
+
+      _permissionGranted = await currentLocation.hasPermission();
+      if (_permissionGranted == PermissionStatus.denied) {
+
+        EasyLoading.dismiss();
+        _permissionGranted = await currentLocation.requestPermission();
+        if (_permissionGranted != PermissionStatus.granted) {
+          EasyLoading.show(dismissOnTap: false, maskType: EasyLoadingMaskType.custom);
+          return;
+
         }
       }
-    } catch (e) {
+
+
+        currentLocation.onLocationChanged.listen((LocationData location) async {
+
+          _locationData =location;
+
+          _controller?.animateCamera(
+              CameraUpdate.newCameraPosition(CameraPosition(
+                target: LatLng(
+                    location.latitude ?? 0.0, location.longitude ?? 0.0),
+                zoom: 14.0,
+
+              )));
+
+
+            _markers.add(Marker(markerId: MarkerId('current_location'),
+              position: LatLng(
+                location.latitude ?? 0.0, location.longitude ?? 0.0,),
+              infoWindow: InfoWindow(title: '${Address}'),
+            ));
+
+          setState(() {
+          });
+
+
+          List<geo.Placemark> placemarks = await geo.placemarkFromCoordinates(
+              location.latitude ?? 0.0, location.longitude ?? 0.0);
+          geo.Placemark place = placemarks[0];
+
+          Address =
+          '${place.street},  ${place.subLocality}, ${place.locality},${place
+              .postalCode}, ${place.country}';
+          debugPrint("Address:${Address}");
+
+
+          debugPrint("_locationData:${location.longitude} ,,${location.longitude}");
+
+          EasyLoading.dismiss();
+        });
+
+
+      } catch (e) {
       debugPrint(e.toString());
+      EasyLoading.dismiss();
     }
-    return position;
+
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +181,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
               children: [
 
                 GoogleMap(
-                  markers: Set.from(markers),
+                  markers: Set.from(_markers),
                   zoomControlsEnabled: true,
                   myLocationEnabled: false,
                   compassEnabled: true,
@@ -199,6 +210,56 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                         ),
                       )),
                 ),
+                Positioned.fill(child: Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8, right: 8),
+                    child: FloatingActionButton.small(
+                      backgroundColor: HexColor('#855EA9'),
+                      onPressed: () {
+
+                        getUserCurrentLocation();
+                      },
+                      heroTag: UniqueKey(),
+                      child:  const Icon(Icons.my_location, color: Colors.white),
+                    ),
+                  ),
+                )),
+
+
+                Positioned.fill(
+                  top: 60,
+                  left: 8,
+                  child: Align(
+                      alignment: Alignment.topCenter,
+                      child:Address!=''? Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 5,
+                              blurRadius: 7,
+                              offset: Offset(0, 3), // changes position of shadow
+                            ),
+                          ],
+                        ),
+                        height: 80,
+                        margin: EdgeInsets.only(right: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text("${Address} "),
+
+                            ],
+                          ),
+                        ),
+                      ):Text("")),
+                ),
               ],
             ),
           ),
@@ -211,16 +272,15 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
           ),
         ],
       ),
-
     ));
   }
 
   void _onConfirmed() {
 
-    DateTime today = DateTime.now();
-    String currentTime = DateFormat("hh:mm:ss").format(today);
+      DateTime today = DateTime.now();
+      String currentTime = DateFormat("hh:mm:ss").format(today);
 
+    checkOutController.TodayCheckOutAttendance(currentTime,_locationData.latitude,_locationData.longitude);
 
-    checkOutController.TodayCheckOutAttendance(currentTime,position.latitude,position.longitude);
   }
 }

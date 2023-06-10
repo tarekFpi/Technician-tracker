@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:technician_tracker/core/features/auth/auth_controller.dart';
 import 'package:technician_tracker/core/features/profile/personal_screen.dart';
+import 'package:technician_tracker/core/features/profile/profile_controller.dart';
+import 'package:technician_tracker/core/features/setting/settings_screent.dart';
 import 'package:technician_tracker/core/theme/color_scheme.dart';
 import 'package:technician_tracker/core/utils/hexcolor.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:technician_tracker/core/utils/toast.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({Key? key}) : super(key: key);
@@ -19,10 +22,14 @@ class _AccountScreenState extends State<AccountScreen> {
 
   AuthController authController = Get.put(AuthController());
 
+  ProfileController profileController = Get.put(ProfileController());
+
   final storage = GetStorage();
 
   @override
   void initState() {
+
+  profileController.ShowProfile();
 
     super.initState();
   }
@@ -31,11 +38,11 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Confirm Logout"),
-        content: Text("Are you sure you want to Logout ??"),
+        title: Text("লগআউট নিশ্চিত করুন"),
+        content: Text("আপনি লগ আউট করতে চান ??"),
         actions: <Widget>[
           TextButton(
-            child: Text('no'),
+            child: Text('না'),
             onPressed: () => Navigator.of(context).pop(),
           ),
           TextButton(
@@ -46,7 +53,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 authController.logout();
               });
             },
-            child: Text('yes'),
+            child: Text('হ্যাঁ'),
           ),
         ],
       ),
@@ -59,28 +66,18 @@ class _AccountScreenState extends State<AccountScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return SafeArea(child: Scaffold(
+      backgroundColor:colorScheme.surfaceVariant,
       appBar: AppBar(
+        backgroundColor:colorScheme.surface,
+        elevation: 2,
+        centerTitle: true,
         title: Text(
-          "Account",
+          "account_info".tr,
           style: textTheme.titleMedium?.copyWith(
               color: HexColor('#855EA9'),
               fontSize: 18,
               fontWeight: FontWeight.bold),
         ),
-        backgroundColor: colorScheme.onPrimary,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-
-          IconButton(
-            onPressed: () {},
-            icon: CircleAvatar(
-              child: Icon(FluentIcons.alert_24_regular),
-              radius: 24.0,
-              backgroundColor: HexColor("#F5F6FC"),
-            ),
-          ),
-        ],
       ),
 
       body:Container(
@@ -90,6 +87,9 @@ class _AccountScreenState extends State<AccountScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
 
+            SizedBox(
+              height: 12,
+            ),
 
             CircleAvatar(
               radius: 50.0,
@@ -101,12 +101,13 @@ class _AccountScreenState extends State<AccountScreen> {
               height: 8,
             ),
 
-            Text("Mr. Samshul Abedin",
-                style: textTheme.headlineLarge?.copyWith(
-                  color: HexColor('#855EA9'),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                )),
+           Obx(() => Text("${profileController.UserName.value}",
+               style: textTheme.headlineLarge?.copyWith(
+                 color: HexColor('#855EA9'),
+                 fontSize: 18,
+                 fontWeight: FontWeight.bold,
+               ))),
+
             SizedBox(
               height: 32,
             ),
@@ -114,7 +115,6 @@ class _AccountScreenState extends State<AccountScreen> {
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                //set border radius more than 50% of height and width to make circle
               ),
               elevation: 0.3,
               color: HexColor('#FCFDFF'),
@@ -122,7 +122,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 focusColor: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 onTap: (){
-                  //  PersonalScreen();
+
                   Get.to(PersonalScreen());
                 },
                 child: Padding(
@@ -144,7 +144,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
                           SizedBox(width: 16,),
 
-                          Text("Personal Account",
+                          Text("personal_info".tr,
                               style: textTheme.headlineLarge?.copyWith(
                                 color: HexColor('#5C5D72'),
                                 fontSize: 14,
@@ -152,7 +152,6 @@ class _AccountScreenState extends State<AccountScreen> {
                               )),
                         ],
                       ),
-
                       Icon(
                         Icons.arrow_forward_ios_outlined,
                         size: 16,
@@ -177,7 +176,8 @@ class _AccountScreenState extends State<AccountScreen> {
                 focusColor: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 onTap: (){
-                  logoutDialog();
+                 //  Get.updateLocale(Locale('en','Us'));
+                  Get.to(SettingScreent());
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -196,14 +196,13 @@ class _AccountScreenState extends State<AccountScreen> {
                           SizedBox(
                             width: 16,
                           ),
-                          Text("Setting",
+                          Text("setting".tr,
                               style: textTheme.headlineLarge?.copyWith(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               )),
                         ],
                       ),
-
 
                       Icon(
                         Icons.arrow_forward_ios_outlined,
@@ -247,7 +246,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           SizedBox(
                             width: 16,
                           ),
-                          Text("LogOut",
+                          Text("logout".tr,
                               style: textTheme.headlineLarge?.copyWith(
                                 color: HexColor('#FF6464'),
                                 fontSize: 14,

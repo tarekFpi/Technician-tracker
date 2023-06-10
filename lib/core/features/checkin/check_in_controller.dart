@@ -16,6 +16,8 @@ import 'package:get_storage/get_storage.dart';
 
    final storage = GetStorage();
 
+   RxBool serviceEnabledStataus =false.obs ;
+
    Future<void> TodayAttendance(var time,var latitude,var longitude) async{
 
      EasyLoading.show(dismissOnTap: false, maskType: EasyLoadingMaskType.custom);
@@ -37,17 +39,13 @@ import 'package:get_storage/get_storage.dart';
 
        if(attendance_response.status == true){
 
-      // var InTime = attendance_response.data!.inTime;
-     //  storage.write("checkInTime", "${InTime}");
-
-
        var id = attendance_response.data!.id;
 
        storage.write("attendance_id", "${id}");
 
-        Get.offAll(() => NavScreen());
+       Get.offAll(() => NavScreen());
 
-         Toast.successToast("${attendance_response.message}");
+       Toast.successToast("${attendance_response.message}");
 
        EasyLoading.dismiss();
        }else{

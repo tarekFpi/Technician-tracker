@@ -17,9 +17,11 @@ class _TaskReportScreenState extends State<TaskReportScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return SafeArea(child: Scaffold(
+      backgroundColor:colorScheme.surfaceVariant,
       appBar: AppBar(
-        backgroundColor: HexColor("#FAFDFC"),
-        title: Text("Task Report",style: textTheme.bodySmall?.copyWith(
+        backgroundColor:colorScheme.surface,
+        elevation: 2,
+        title: Text("টাস্ক রিপোর্ট",style: textTheme.bodySmall?.copyWith(
             color: lightColorScheme.onTertiaryContainer, fontSize: 18,fontWeight: FontWeight.w500),),
       ),
       body: Container(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:technician_tracker/core/features/auth/login_screen.dart';
 import 'package:technician_tracker/core/features/splash/splash_screen.dart';
+import 'package:technician_tracker/core/multilang/app_translations.dart';
 import 'package:technician_tracker/core/theme/app_theme.dart';
 import 'package:get/get.dart';
 import 'package:oktoast/oktoast.dart';
@@ -32,10 +33,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //bn
+    final storage = GetStorage();
+
     return OKToast(
       child: GetMaterialApp(
+        locale:  Locale("${storage.read("key")==null?"bn":storage.read("key")}", "${storage.read("key")==null?"BD":"US"}"),
+        translations: AppTranslations(),
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme(),
+         theme: AppTheme.lightTheme(),
         themeMode: ThemeMode.light,
         home:SplashScreen(),
         builder: EasyLoading.init(),

@@ -36,7 +36,9 @@ class TodayAttendan {
       this.coordinateInId, 
       this.coordinateOutId, 
       this.createdAt, 
-      this.updatedAt,});
+      this.updatedAt, 
+      this.deviceInTime, 
+      this.deviceOutTime,});
 
   TodayAttendan.fromJson(dynamic json) {
     id = json['id'];
@@ -49,17 +51,21 @@ class TodayAttendan {
     coordinateOutId = json['coordinate_out_id'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
+    deviceInTime = json['device_in_time'];
+    deviceOutTime = json['device_out_time'];
   }
   int? id;
-  String? userId;
+  int? userId;
   String? date;
   String? inTime;
-  dynamic outTime;
+  String? outTime;
   String? status;
-  String? coordinateInId;
-  dynamic coordinateOutId;
+  int? coordinateInId;
+  int? coordinateOutId;
   String? createdAt;
   String? updatedAt;
+  String? deviceInTime;
+  dynamic deviceOutTime;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -73,6 +79,8 @@ class TodayAttendan {
     map['coordinate_out_id'] = coordinateOutId;
     map['created_at'] = createdAt;
     map['updated_at'] = updatedAt;
+    map['device_in_time'] = deviceInTime;
+    map['device_out_time'] = deviceOutTime;
     return map;
   }
 

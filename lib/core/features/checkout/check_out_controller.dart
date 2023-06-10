@@ -40,10 +40,6 @@ class CheckOutController extends GetxController {
 
       if(attendance_response.status == true){
 
-        var OutTime = attendance_response.data!.outTime;
-
-        storage.write("OutTime", "${OutTime}");
-
         Get.offAll(() => NavScreen());
 
         Toast.successToast("${attendance_response.message}");

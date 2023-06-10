@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:technician_tracker/core/features/profile/profile_controller.dart';
 import 'package:technician_tracker/core/theme/color_scheme.dart';
 import 'package:technician_tracker/core/utils/hexcolor.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:intl/intl.dart';
+import 'package:technician_tracker/core/utils/toast.dart';
 
 class PersonalScreen extends StatefulWidget {
   const PersonalScreen({Key? key}) : super(key: key);
@@ -12,6 +16,92 @@ class PersonalScreen extends StatefulWidget {
 }
 
 class _PersonalScreenState extends State<PersonalScreen> {
+
+  ProfileController profileController = Get.put(ProfileController());
+
+  final fullNameTextEditing = TextEditingController();
+
+  final emailTextEditing = TextEditingController();
+
+  final joinDateTextEditing = TextEditingController();
+
+  final addressTextEditing = TextEditingController();
+
+  final phoneTextEditing = TextEditingController();
+
+  TextEditingController dateInputController = TextEditingController();
+
+  String _selectedDate = '';
+  String _dateCount = '';
+  String _range = '';
+  String _rangeCount = '';
+
+  void _onSelectionChanged(DateRangePickerSelectionChangedArgs args) {
+
+    setState(() {
+      if (args.value is PickerDateRange) {
+        _range = '${DateFormat('dd/MM/yyyy').format(args.value.startDate)} -'
+            ' ${DateFormat('dd/MM/yyyy').format(args.value.endDate ?? args.value.startDate)}';
+      } else if (args.value is DateTime) {
+        _selectedDate = args.value.toString();
+      } else if (args.value is List<DateTime>) {
+        _dateCount = args.value.length.toString();
+      } else {
+        _rangeCount = args.value.length.toString();
+      }
+    });
+  }
+
+
+  @override
+  void initState() {
+
+
+    fullNameTextEditing.text = profileController.nameTextEditing.value.text;
+
+    emailTextEditing.text = profileController.emailTextEditing.value.text;
+
+    addressTextEditing.text = profileController.addressTextEditing.value.text;
+
+    phoneTextEditing.text = profileController.phoneTextEditing.value.text;
+
+    super.initState();
+  }
+
+  void ValidationUserInformation() {
+
+    if(fullNameTextEditing.text==''){
+
+      Toast.errorToast("Please Your Full Name!!");
+
+    }else if(emailTextEditing.text==''){
+
+      Toast.errorToast("Please Your Email!!");
+
+    }else if(phoneTextEditing.text==''){
+
+      Toast.errorToast("Please Your Phone Number!!");
+
+    }else if(addressTextEditing.text==''){
+
+      Toast.errorToast("Please Your Address!!");
+
+    }else{
+
+       String fullName =fullNameTextEditing.text.toString().trim();
+
+       String email = emailTextEditing.text.toString().trim();
+
+       String phone = phoneTextEditing.text.toString().trim();
+
+       String address =addressTextEditing.text.toString().trim();
+
+      profileController.UpdateProfile(fullName,email,phone,address);
+    }
+
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -19,12 +109,14 @@ class _PersonalScreenState extends State<PersonalScreen> {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor:colorScheme.surfaceVariant,
         appBar: AppBar(
-          backgroundColor: HexColor("#FAFDFC"),
-          title: Text("Personal Account",style: textTheme.bodySmall?.copyWith(
-              color: lightColorScheme.onTertiaryContainer, fontSize: 18,fontWeight: FontWeight.w500),),
+          backgroundColor:colorScheme.surface,
+          elevation: 2,
+          centerTitle: true,
+          title: Text("personal_account".tr,style: textTheme.bodySmall?.copyWith(
+              color: HexColor('#855EA9'), fontSize: 18,fontWeight: FontWeight.w500),),
         ),
-        backgroundColor: Colors.white,
         body: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -37,6 +129,9 @@ class _PersonalScreenState extends State<PersonalScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
+                    SizedBox(
+                      height: 12,
+                    ),
                     Center(
                       child: CircleAvatar(
                         child: Image.asset("assets/images/user_image.png"),
@@ -47,25 +142,16 @@ class _PersonalScreenState extends State<PersonalScreen> {
 
 
                     ListTile(
-                      title: Text("Full Name"),
+                      title: Text("ফুল নাম"),
                     ),
                     Card(
                       child: TextFormField(
-                        validator: (val) {
-                          if (val == null || val.isEmpty) {
-                            return 'Enter  Full Name';
-                          }
-                          return null;
-                        }, onChanged: (value) {
-                        setState(() {
-
-                        });
-                      },
+                        controller: fullNameTextEditing,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.all(16),
                             fillColor: Colors.white38,
                             filled: true,
-                            hintText: "Full Name",
+                            hintText: "ফুল নাম",
                             prefixIcon: Icon(FluentIcons.person_24_regular,color: Colors.black38)
 
                         ),
@@ -74,25 +160,16 @@ class _PersonalScreenState extends State<PersonalScreen> {
                     ),
 
                     ListTile(
-                      title: Text("Email"),
+                      title: Text("ইমেইল"),
                     ),
                     Card(
                       child: TextFormField(
-                        validator: (val) {
-                          if (val == null || val.isEmpty) {
-                            return 'Enter  Email';
-                          }
-                          return null;
-                        }, onChanged: (value) {
-                        setState(() {
-
-                        });
-                      },
+                        controller: emailTextEditing,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.all(16),
                             fillColor: Colors.white38,
                             filled: true,
-                            hintText: "Your  Email",
+                            hintText: "তোমার ইমেইল",
                             prefixIcon: Icon(Icons.email,color: Colors.black38)
 
                         ),
@@ -101,40 +178,31 @@ class _PersonalScreenState extends State<PersonalScreen> {
                     ),
 
                     ListTile(
-                      title: Text("Joining Date"),
+                      title: Text("ফোন"),
                     ),
                     Card(
                       child: TextFormField(
-                        validator: (val) {
-                          if (val == null || val.isEmpty) {
-                            return 'Joining  Date';
-                          }
-                          return null;
-                        }, onChanged: (value) {
-                        setState(() {
-
-                        });
-                      },
+                        controller: phoneTextEditing,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.all(16),
                             fillColor: Colors.white38,
                             filled: true,
-                            hintText: "Joining  Date",
-                            prefixIcon: Icon(Icons.date_range,color: Colors.black38)
-
+                            hintText: "তোমার ফোন",
+                            prefixIcon: Icon(Icons.phone,color: Colors.black38)
                         ),
-
                       ),
                     ),
 
                     ListTile(
-                      title: Text("Address"),
+                      title: Text("ঠিকানা"),
                     ),
+
                     Card(
                       child: TextFormField(
+                        controller: addressTextEditing,
                         validator: (val) {
                           if (val == null || val.isEmpty) {
-                            return 'Enter valid Address';
+                            return 'বৈধ ঠিকানা লিখুন';
                           }
                           return null;
                         }, onChanged: (value) {
@@ -146,7 +214,7 @@ class _PersonalScreenState extends State<PersonalScreen> {
                             contentPadding: EdgeInsets.all(16),
                             fillColor: Colors.white38,
                             filled: true,
-                            hintText: "Your User Address",
+                            hintText: "আপনার ঠিকানা",
                             prefixIcon: Icon(FluentIcons.add_12_regular,color: Colors.black38)
 
                         ),
@@ -174,9 +242,9 @@ class _PersonalScreenState extends State<PersonalScreen> {
             ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
             onPressed: (){
 
-              //   LoginValidator();
+              ValidationUserInformation();
             },
-            child: Text('Update',style: textTheme.bodyLarge?.copyWith(
+            child: Text('আপডেট',style: textTheme.bodyLarge?.copyWith(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 color: lightColorScheme!.onPrimary)),
@@ -184,4 +252,6 @@ class _PersonalScreenState extends State<PersonalScreen> {
         ),
       ),);
   }
+
+
 }

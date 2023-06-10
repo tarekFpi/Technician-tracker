@@ -51,9 +51,12 @@ void checkAuthState() async {
 
 @override
   Widget build(BuildContext context) {
+  final colorScheme = Theme.of(context).colorScheme;
+  final textTheme = Theme.of(context).textTheme;
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor:colorScheme.surfaceVariant,
         body:Container(
           width: double.infinity,
           height: double.infinity,
@@ -66,7 +69,7 @@ void checkAuthState() async {
                   height:300,
                   child: Lottie.asset("assets/animation/tracking.json")
               ),
-              Text("Welcome to Technician Tracker Apps",style: TextStyle(fontSize: 21,color: HexColor('#855EA9'),fontWeight: FontWeight.bold),),
+              Text("splashScreen_title".tr,style: TextStyle(fontSize: 21,color: HexColor('#855EA9'),fontWeight: FontWeight.bold),),
             ],
           ),
         ),

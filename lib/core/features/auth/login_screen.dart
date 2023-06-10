@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:technician_tracker/core/features/auth/Forget_password_screen.dart';
+import 'package:technician_tracker/core/features/auth/forget_password_screen.dart';
 import 'package:technician_tracker/core/features/auth/auth_controller.dart';
 import 'package:technician_tracker/core/features/nav/home/home_screen.dart';
 import 'package:technician_tracker/core/features/nav/nav_screen.dart';
@@ -9,6 +9,7 @@ import 'package:technician_tracker/core/utils/hexcolor.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:get/get.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:get_storage/get_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -20,7 +21,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
 
   bool obscureText = true;
-  String? password;
+  String? pin;
   String? phone;
   bool rememberPassword = false;
 
@@ -38,10 +39,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (formKey.currentState!.validate()) {
 
-      authController.login(phone, password);
+      authController.login(phone, pin);
 
      // Get.off(NavScreen());
     }
+  }
+
+  @override
+  void initState() {
+
+    checkRememberPassword();
+    super.initState();
+  }
+
+  final storage = GetStorage();
+
+  void checkRememberPassword() {
+    final savePhone = storage.read("phone");
+    final savePin = storage.read("pin");
+
+    setState(() {
+      if (savePhone != null && savePin != null) {
+        phone = savePhone;
+        pin = savePin;
+        rememberPassword = true;
+      } else {
+        rememberPassword = false;
+      }
+    });
   }
 
 
@@ -52,8 +77,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return SafeArea(
         child: Scaffold(
-           backgroundColor:  HexColor("#FAFDFC"),
-        body: SingleChildScrollView(
+         backgroundColor:colorScheme.surfaceVariant,
+         body: SingleChildScrollView(
           child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16,),
           child: Column(
@@ -69,14 +94,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Lottie.asset("assets/animation/login.json",width: 300, height: 200)),
 
               Text(
-                "Technician  Tracker Apps",
+                "login_title".tr,
                 style: textTheme.titleMedium?.copyWith(
                     color: Colors.black87,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
               ),
               Text(
-                "Login",
+                "sub_title".tr,
                 style: textTheme.titleMedium?.copyWith(
                     color: Colors.black87,
                     fontSize: 18,
@@ -113,7 +138,6 @@ class _LoginScreenState extends State<LoginScreen> {
                              hintText: "Enter  Phone",
                             prefixIcon: Icon(FluentIcons.person_24_regular,color: Colors.black38)
                         ),
-
                       ),
                     ),
 
@@ -122,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Card(
                       child: TextFormField(
-                        initialValue: password,
+                        initialValue: pin,
                         validator: (val) {
                           if (val == null || val.isEmpty) {
                             return 'Enter Your Pin';
@@ -130,14 +154,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         }, onChanged: (value) {
                         setState(() {
-                          password = value;
+                          pin = value;
                         });
-                      },
+                       },
                          decoration: InputDecoration(
                            fillColor: Colors.white38,
                            filled: true,
                           contentPadding: EdgeInsets.all(16),
-                           hintText: "Your Pin",
+                           hintText: "Enter Pin",
                           prefixIcon: Icon(Icons.lock_outline_rounded,color: HexColor('#855EA9'),),
                           suffixIcon: IconButton(
                               icon: Icon(
@@ -147,10 +171,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               onPressed: togglePasswordVisibility),
                         ),
 
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.number,
                         obscureText: obscureText,
                       ),
                     ),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -171,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 });
                               },
                             ),
-                            title:  Text("Remember Pin",style: textTheme.titleMedium?.copyWith(
+                            title:  Text("pin_remember".tr,style: textTheme.titleMedium?.copyWith(
                                 color: Colors.black87,
                                  fontSize: 14,
                                 fontWeight: FontWeight.bold)),
@@ -189,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         Get.to(ForgetPasswrodScreen());
                             },
-                              child: const Text("Forget Password")),
+                              child:  Text("forgot_password".tr)),
                         ),
 
                       ],
@@ -198,6 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 16,
                     ),
+
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

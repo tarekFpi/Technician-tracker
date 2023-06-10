@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:technician_tracker/core/features/auth/auth_controller.dart';
 import 'package:technician_tracker/core/theme/color_scheme.dart';
 import 'package:technician_tracker/core/utils/hexcolor.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:get/get.dart';
 
 class ForgetPasswrodScreen extends StatefulWidget {
   const ForgetPasswrodScreen({Key? key}) : super(key: key);
@@ -17,11 +19,11 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
   bool obscureText_NewPin = true;
   bool obscureText_Confirm = true;
 
-  String? previus_password;
+  String? previus_pin;
 
-  String? new_password;
+  String? new_pin;
 
-  String? con_password;
+  String? con_pin;
 
 
   final formKey = GlobalKey<FormState>();
@@ -45,11 +47,13 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
     });
   }
 
+  AuthController authController = Get.put(AuthController());
+
   void ForgetPasswordValidator(){
 
     if (formKey.currentState!.validate()) {
 
-
+      authController.ForgetPasswrod(previus_pin, new_pin,con_pin);
     }
   }
 
@@ -60,8 +64,13 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return SafeArea(
+
         child: Scaffold(
+          backgroundColor:colorScheme.surfaceVariant,
           appBar: AppBar(
+            backgroundColor:colorScheme.surface,
+            elevation: 2,
+            centerTitle: true,
             title: Text(
               "Forget",
               style: textTheme.titleMedium?.copyWith(
@@ -69,11 +78,9 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
                   fontSize: 18,
                   fontWeight: FontWeight.bold),
             ),
-            backgroundColor: colorScheme.onPrimary,
-
 
           ),
-          backgroundColor:  HexColor("#FAFDFC"),
+
           body: SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16,),
@@ -113,7 +120,7 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
                         ),
                         Card(
                           child: TextFormField(
-                            initialValue: previus_password,
+                            initialValue: previus_pin,
                             validator: (val) {
                               if (val == null || val.isEmpty) {
                                 return 'Enter Previous Pin';
@@ -121,7 +128,7 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
                               return null;
                             }, onChanged: (value) {
                             setState(() {
-                              previus_password = value;
+                              previus_pin = value;
                             });
                           },
                             decoration: InputDecoration(
@@ -149,7 +156,7 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
                         ),
                         Card(
                           child: TextFormField(
-                            initialValue: new_password,
+                            initialValue: new_pin,
                             validator: (val) {
                               if (val == null || val.isEmpty) {
                                 return 'Enter New Pin';
@@ -157,7 +164,7 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
                               return null;
                             }, onChanged: (value) {
                             setState(() {
-                              new_password = value;
+                              new_pin = value;
                             });
                           },
                             decoration: InputDecoration(
@@ -184,7 +191,7 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
                         ),
                         Card(
                           child: TextFormField(
-                            initialValue: con_password,
+                            initialValue: con_pin,
                             validator: (val) {
                               if (val == null || val.isEmpty) {
                                 return 'Enter Confirm Pin';
@@ -192,7 +199,7 @@ class _ForgetPasswrodScreenState extends State<ForgetPasswrodScreen> {
                               return null;
                             }, onChanged: (value) {
                             setState(() {
-                              con_password = value;
+                              con_pin = value;
                             });
                           },
                             decoration: InputDecoration(

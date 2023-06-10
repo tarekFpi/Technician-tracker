@@ -20,12 +20,12 @@ import 'package:get_storage/get_storage.dart';
 
    var TodayAttendanCheckInTime = "".obs;
 
+   var TodayAttendanCheckOutTime = "".obs;
+
   final storage = GetStorage();
 
   @override
   void onInit() {
-
-   ShowAttendanceReport();
 
    TodayAttendanceCheck();
   }
@@ -44,6 +44,11 @@ import 'package:get_storage/get_storage.dart';
 
      final list = attendance_response.data ?? [];
 
+     if(attendancelist.isEmpty){
+
+      change(null, status: RxStatus.empty());
+
+     }
      attendancelist.assignAll(list);
 
      change(attendancelist, status: RxStatus.success());
@@ -65,6 +70,38 @@ import 'package:get_storage/get_storage.dart';
   }
 
 
+  Future FilterAttendanceReport(String? query)async {
+
+    try{
+
+    change(null, status: RxStatus.loading());
+
+     final res = await dioClient.get("/api/v1/attendances?month=${query}");
+
+     final attendance_response = AttendanceResponse.fromJson(res);
+
+     if(attendance_response.status==true){
+
+      final list = attendance_response.data ?? [];
+
+      attendancelist.assignAll(list);
+
+      change(attendancelist, status: RxStatus.success());
+
+     }else {
+
+      Toast.errorToast("${attendance_response.message}");
+     }
+
+    }catch(e){
+
+     debugPrint(e.toString());
+    }
+
+  }
+
+
+
 
   Future<void> TodayAttendanceCheck() async{
 
@@ -84,10 +121,7 @@ import 'package:get_storage/get_storage.dart';
 
      storage.remove("OutTime");
 
-     storage.remove("OutTime");
-
      storage.remove("attendance_id");
-
 
      EasyLoading.dismiss();
 
@@ -95,8 +129,14 @@ import 'package:get_storage/get_storage.dart';
 
      var InTime = check_attendance.data!.inTime;
 
-    // storage.write("checkInTime", "${InTime}");
+     if(check_attendance.data!.outTime!=null){
 
+       var out_time = check_attendance.data!.outTime;
+
+       TodayAttendanCheckOutTime(out_time);
+
+      // storage.write("OutTime", "${out_time}");
+     }
      TodayAttendanCheckInTime(InTime);
 
      EasyLoading.dismiss();
@@ -104,10 +144,11 @@ import 'package:get_storage/get_storage.dart';
 
    } catch(e) {
 
-    Toast.errorToast("${e.toString()}");
+    Toast.errorToast("Issue:${e.toString()}");
 
     debugPrint(e.toString());
     EasyLoading.dismiss();
    }
   }
+
  }

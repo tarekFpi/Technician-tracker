@@ -4,6 +4,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:technician_tracker/core/features/auth/login_screen.dart';
+import 'package:technician_tracker/core/features/auth/model/forget_password_response.dart';
 import 'package:technician_tracker/core/features/auth/model/login_response.dart';
 import 'package:technician_tracker/core/features/nav/nav_screen.dart';
 import 'package:technician_tracker/core/network/dio_client.dart';
@@ -16,7 +17,7 @@ import 'package:technician_tracker/core/utils/toast.dart';
 
    final storage = GetStorage();
 
-   Future login(phone, password) async{
+   Future login(phone, pin) async{
 
       EasyLoading.show(dismissOnTap: false, maskType: EasyLoadingMaskType.custom);
 
@@ -24,7 +25,7 @@ import 'package:technician_tracker/core/utils/toast.dart';
 
        final res = await dioClient.post("/api/v1/login",data:{
          "username": phone,
-         "password": password
+         "password": pin
        });
 
        final loginResponse = LoginResponse.fromJson(res.data);
@@ -33,7 +34,7 @@ import 'package:technician_tracker/core/utils/toast.dart';
 
          final userToken = loginResponse.data!.token.toString();
 
-         saveToken(userToken);
+         saveToken(userToken,phone,pin);
 
          Toast.successToast("${loginResponse.message}");
 
@@ -52,12 +53,46 @@ import 'package:technician_tracker/core/utils/toast.dart';
         }
    }
 
-   void saveToken(token){
+   Future ForgetPasswrod(previousPin, NewPin,conPin) async{
 
-     storage.write("user_token", token);
+      EasyLoading.show(dismissOnTap: false, maskType: EasyLoadingMaskType.custom);
 
-   }
+      try {
 
+        final res = await dioClient.post("/api/v1/user-password-change",data:{
+          "previous_password": previousPin,
+          "password": NewPin,
+          "password_confirmation": conPin,
+        });
+
+        final loginResponse = ForgetPasswordResponse.fromJson(res.data);
+
+        if(loginResponse.message=="Password has been updated successfully!"){
+
+          Toast.successToast("${loginResponse.message}");
+
+          Get.off(LoginScreen());
+
+          EasyLoading.dismiss();
+
+        }else {
+
+          Toast.errorToast("${loginResponse.message}");
+          EasyLoading.dismiss();
+        }
+
+      } catch(e) {
+        Toast.errorToast("${e.toString()}");
+        EasyLoading.dismiss();
+      }
+    }
+
+    void saveToken(token,phone,pin){
+
+      storage.write("user_token", token);
+      storage.write("phone",phone);
+      storage.write("pin",pin);
+    }
 
     void logout() async {
       try{

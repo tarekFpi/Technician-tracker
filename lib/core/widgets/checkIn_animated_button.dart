@@ -79,7 +79,7 @@ class _AnimatedButtonState extends State<AnimatedButton> with SingleTickerProvid
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        "Tap and Hold to Attendance",
+                        "আলতো চাপুন এবং উপস্থিতি ধরে রাখুন",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,

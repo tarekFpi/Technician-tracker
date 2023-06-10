@@ -25,8 +25,6 @@ import 'package:intl/intl.dart';
  class _HomeScreenState extends State<HomeScreen> {
 
     final attendanceReportController = Get.put(AttendanceReportController());
-    
- //   final checkOutController = Get.put(CheckOutController());
 
     final storage = GetStorage();
 
@@ -37,13 +35,15 @@ import 'package:intl/intl.dart';
      final textTheme = Theme.of(context).textTheme;
 
      return SafeArea(child: Scaffold(
-       backgroundColor: HexColor("#FAFDFC"),
+       backgroundColor:colorScheme.surfaceVariant,
          appBar: AppBar(
+           backgroundColor:colorScheme.surface,
+             elevation: 2,
              centerTitle: true,
              title: Text(
-               "Home",
+               "home_page".tr,
                style: textTheme.titleMedium?.copyWith(
-                   color: Colors.black87,
+                   color: HexColor('#855EA9'),
                    fontSize: 18,
                    fontWeight: FontWeight.bold),
              ),actions: [
@@ -105,6 +105,40 @@ import 'package:intl/intl.dart';
 
                      var status = attendanceReportController.TodayAttendanCheckStatus.value;
 
+                     var checkInTime = attendanceReportController.TodayAttendanCheckInTime.value;
+
+                     if(checkInTime!=""){
+
+                       var temp = int.parse(checkInTime!.split(':')[0]);
+                       String? t;
+                       if(temp >= 12 && temp <24){
+                         t = " PM";
+                       }
+                       else{
+                         t = " AM";
+                       }
+                       if (temp > 12) {
+                         temp = temp - 12;
+                         if (temp < 10) {
+                           checkInTime = checkInTime.replaceRange(0, 2, "$temp");
+                           checkInTime += t;
+                         } else {
+                           checkInTime = checkInTime.replaceRange(0, 2, "$temp");
+                           checkInTime += t;
+                         }
+                       } else if (temp == 00) {
+
+                         checkInTime = checkInTime.replaceRange(0, 2, '12');
+                         checkInTime += t;
+
+                       }else{
+
+                         checkInTime += t;
+                       }
+                     }
+
+                     print("checkInTime:${checkInTime}");
+
                      return Card(
                        color: HexColor("#FAFDFC"),
                        elevation:1,
@@ -137,15 +171,15 @@ import 'package:intl/intl.dart';
 
                              Center(
                                child: Text(
-                                 "Check In",
+                                 "check_in".tr,
                                  style: textTheme.bodyMedium?.copyWith(
                                      color: Colors.black, fontSize: 14,fontWeight: FontWeight.w500),
                                ),
                              ),
 
-                             attendanceReportController.TodayAttendanCheckInTime.value!="" ? Center(
+                             checkInTime!="" ? Center(
                                child: Text(
-                                 "In Time ${DateFormat.jm().format(DateFormat("hh:mm:ss").parse("${attendanceReportController.TodayAttendanCheckInTime}"))}",
+                                 "${checkInTime}",
                                  style: textTheme.bodyMedium?.copyWith(
                                      color: HexColor('#855EA9'), fontSize: 14,fontWeight: FontWeight.bold),
                                ),
@@ -167,6 +201,40 @@ import 'package:intl/intl.dart';
                      {
                        var status = attendanceReportController.TodayAttendanCheckStatus.value;
 
+                       var checkOutTime = attendanceReportController.TodayAttendanCheckOutTime.value;
+
+                       if(checkOutTime!=""){
+
+                         var temp = int.parse(checkOutTime!.split(':')[0]);
+                         String? t;
+                         if(temp >= 12 && temp <24){
+                           t = " PM";
+                         }
+                         else{
+                           t = " AM";
+                         }
+                         if (temp > 12) {
+                           temp = temp - 12;
+                           if (temp < 10) {
+                             checkOutTime = checkOutTime.replaceRange(0, 2, "$temp");
+                             checkOutTime += t;
+                           } else {
+                             checkOutTime = checkOutTime.replaceRange(0, 2, "$temp");
+                             checkOutTime += t;
+                           }
+                         } else if (temp == 00) {
+
+                           checkOutTime = checkOutTime.replaceRange(0, 2, '12');
+                           checkOutTime += t;
+
+                         }else{
+
+                           checkOutTime += t;
+                         }
+                       }
+
+
+
                        return Card(
                          color: HexColor("#FAFDFC"),
                          elevation: 1,
@@ -176,17 +244,13 @@ import 'package:intl/intl.dart';
                          child: InkWell(
                            onTap: () {
 
-                            if(status!=false && storage.read("OutTime")==null){
+                            if(status!=false){
 
                               Get.to(CheckOutScreen());
 
                             }if(status==false){
 
                              Toast.errorToast("Your are first check in then check Out!!");
-
-                            }if(storage.read("OutTime")!=null){
-
-                              Toast.errorToast("Your are already check Out!!");
                             }
 
                            },
@@ -203,14 +267,14 @@ import 'package:intl/intl.dart';
                                ),
 
                                Text(
-                                 "Check Out",
+                                 "check_out".tr,
                                  style: textTheme.bodyMedium?.copyWith(
                                      color: Colors.black, fontSize: 14,fontWeight: FontWeight.w500),
                                ),
 
-                              storage.read("OutTime")!=null ? Center(
+                               checkOutTime!="" ? Center(
                                  child: Text(
-                                   "Out Time ${DateFormat.jm().format(DateFormat("hh:mm:ss").parse("${storage.read("OutTime")}"))}",
+                                   "${checkOutTime}",
                                    style: textTheme.bodyMedium?.copyWith(
                                        color: HexColor('#855EA9'), fontSize: 14,fontWeight: FontWeight.bold),
                                  ),
@@ -222,7 +286,6 @@ import 'package:intl/intl.dart';
                      }
                    )),
                  ),
-
              ],
            ),
 
@@ -260,7 +323,7 @@ import 'package:intl/intl.dart';
 
                            Center(
                              child: Text(
-                               "Attendance Report",
+                               "Attendance_Report".tr,
                                style: textTheme.bodyMedium?.copyWith(
                                    color: Colors.black, fontSize: 14,fontWeight: FontWeight.w500),
                              ),
@@ -302,19 +365,16 @@ import 'package:intl/intl.dart';
 
 
                            Text(
-                             "Task Report",
+                             "Task_Report".tr,
                              style: textTheme.bodyMedium?.copyWith(
                                  color: Colors.black, fontSize: 14,fontWeight: FontWeight.w500),
                            ),
-
                          ],
                        ),
                      ),
                    ),
                  ),
                ),
-
-
              ],
            ),
          ],
